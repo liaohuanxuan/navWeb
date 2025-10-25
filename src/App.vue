@@ -18,10 +18,16 @@
                 @input="handleSearch"
               >
             </div>
-            <button class="import-btn" @click="showImportModal = true">
-              <i class="fas fa-plus"></i>
-              导入网站
-            </button>
+            <div class="action-buttons">
+              <button class="import-btn" @click="showImportModal = true">
+                <i class="fas fa-plus"></i>
+                导入网站
+              </button>
+              <button class="manage-btn" @click="showManageModal = true">
+                <i class="fas fa-cog"></i>
+                数据管理
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -99,6 +105,79 @@
         <p>&copy; 2025 个人工具导航 | 让工作更高效</p>
       </div>
     </footer>
+
+    <!-- 数据管理弹窗 -->
+    <div v-if="showManageModal" class="modal-overlay" @click="closeManageModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>
+            <i class="fas fa-database"></i>
+            数据管理
+          </h3>
+          <button class="close-btn" @click="closeManageModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="manage-section">
+            <h4><i class="fas fa-info-circle"></i> 数据统计</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-label">默认网站</div>
+                <div class="stat-value">{{ defaultSitesCount }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">自定义网站</div>
+                <div class="stat-value custom">{{ customSitesCount }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">总计</div>
+                <div class="stat-value total">{{ totalSitesCount }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="manage-section">
+            <h4><i class="fas fa-download"></i> 导出配置</h4>
+            <p class="section-desc">将所有数据（默认+自定义）导出为 JSON 文件，可用于备份或迁移到其他设备。</p>
+            <button class="action-btn export-btn" @click="exportData">
+              <i class="fas fa-file-download"></i>
+              导出配置文件
+            </button>
+          </div>
+
+          <div class="manage-section">
+            <h4><i class="fas fa-upload"></i> 导入配置</h4>
+            <p class="section-desc">上传之前导出的配置文件，恢复所有自定义数据。</p>
+            <input 
+              type="file" 
+              ref="fileInput" 
+              accept=".json"
+              style="display: none"
+              @change="importData"
+            >
+            <button class="action-btn import-btn" @click="$refs.fileInput.click()">
+              <i class="fas fa-file-upload"></i>
+              选择配置文件
+            </button>
+          </div>
+
+          <div class="manage-section danger-section">
+            <h4><i class="fas fa-trash-alt"></i> 清除数据</h4>
+            <p class="section-desc">清除所有自定义添加的网站，恢复到默认状态。此操作不可恢复！</p>
+            <button class="action-btn danger-btn" @click="confirmClearData">
+              <i class="fas fa-exclamation-triangle"></i>
+              清除所有自定义数据
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="closeManageModal">关闭</button>
+        </div>
+      </div>
+    </div>
 
     <!-- 导入网站弹窗 -->
     <div v-if="showImportModal" class="modal-overlay" @click="closeModal">
@@ -198,12 +277,15 @@ const searchQuery = ref('')
 const selectedCategory = ref('')
 const categories = ref([])
 const allData = ref([])
+const defaultData = ref([]) // 存储默认数据
 
 // 导入功能相关状态
 const showImportModal = ref(false)
+const showManageModal = ref(false)
 const importUrl = ref('')
 const isFetching = ref(false)
 const errorMessage = ref('')
+const fileInput = ref(null)
 const siteInfo = ref({
   name: '',
   description: '',
@@ -213,17 +295,86 @@ const siteInfo = ref({
   tagsInput: ''
 })
 
-// 加载数据
-onMounted(async () => {
+// 数据统计
+const defaultSitesCount = computed(() => {
+  let count = 0
+  defaultData.value.forEach(cat => {
+    count += cat.sites.length
+  })
+  return count
+})
+
+const customSitesCount = computed(() => {
+  return loadCustomData().length
+})
+
+const totalSitesCount = computed(() => {
+  let count = 0
+  allData.value.forEach(cat => {
+    count += cat.sites.length
+  })
+  return count
+})
+
+// localStorage 键名
+const STORAGE_KEY = 'navWeb_customSites'
+
+// 加载默认数据
+const loadDefaultData = async () => {
   try {
-    // 使用相对路径加载数据
     const response = await fetch('./data/sites.json')
     const data = await response.json()
-    allData.value = data.categories
-    categories.value = data.categories
+    defaultData.value = JSON.parse(JSON.stringify(data.categories)) // 深拷贝
+    return data.categories
   } catch (error) {
-    console.error('加载数据失败:', error)
+    console.error('加载默认数据失败:', error)
+    return []
   }
+}
+
+// 从 localStorage 加载自定义数据
+const loadCustomData = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('加载自定义数据失败:', error)
+    return []
+  }
+}
+
+// 保存自定义数据到 localStorage
+const saveCustomData = (customSites) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(customSites))
+  } catch (error) {
+    console.error('保存数据失败:', error)
+    alert('保存失败：' + error.message)
+  }
+}
+
+// 合并默认数据和自定义数据
+const mergeData = (defaultCategories, customSites) => {
+  const merged = JSON.parse(JSON.stringify(defaultCategories)) // 深拷贝默认数据
+  
+  // 将自定义网站添加到对应分类
+  customSites.forEach(site => {
+    const category = merged.find(cat => cat.id === site.categoryId)
+    if (category) {
+      // 标记为自定义数据
+      category.sites.push({ ...site, isCustom: true })
+    }
+  })
+  
+  return merged
+}
+
+// 初始化数据
+onMounted(async () => {
+  const defaults = await loadDefaultData()
+  const customs = loadCustomData()
+  allData.value = mergeData(defaults, customs)
+  categories.value = allData.value
 })
 
 // 选择分类
@@ -266,10 +417,108 @@ const filteredCategories = computed(() => {
   return result
 })
 
-// 关闭弹窗
+// 关闭导入弹窗
 const closeModal = () => {
   showImportModal.value = false
   resetImportForm()
+}
+
+// 关闭管理弹窗
+const closeManageModal = () => {
+  showManageModal.value = false
+}
+
+// 导出数据
+const exportData = () => {
+  const customSites = loadCustomData()
+  const exportObj = {
+    version: '1.0',
+    exportTime: new Date().toISOString(),
+    customSites: customSites
+  }
+  
+  const dataStr = JSON.stringify(exportObj, null, 2)
+  const blob = new Blob([dataStr], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `navWeb-config-${Date.now()}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+  
+  alert(`成功导出配置文件！\n\n包含 ${customSites.length} 个自定义网站。`)
+}
+
+// 导入数据
+const importData = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const content = e.target.result
+      const importObj = JSON.parse(content)
+      
+      // 验证数据格式
+      if (!importObj.customSites || !Array.isArray(importObj.customSites)) {
+        throw new Error('配置文件格式不正确')
+      }
+      
+      // 保存导入的数据
+      saveCustomData(importObj.customSites)
+      
+      // 重新加载数据
+      allData.value = mergeData(defaultData.value, importObj.customSites)
+      categories.value = allData.value
+      
+      alert(`成功导入配置！\n\n导入了 ${importObj.customSites.length} 个自定义网站。`)
+      closeManageModal()
+    } catch (error) {
+      console.error('导入失败:', error)
+      alert('导入失败：' + error.message)
+    }
+  }
+  reader.readAsText(file)
+  
+  // 清空 input，允许重复选择同一文件
+  event.target.value = ''
+}
+
+// 确认清除数据
+const confirmClearData = () => {
+  const customCount = customSitesCount.value
+  if (customCount === 0) {
+    alert('当前没有自定义数据。')
+    return
+  }
+  
+  const confirmed = confirm(
+    `确定要清除所有自定义数据吗？\n\n` +
+    `这将删除 ${customCount} 个自定义网站。\n` +
+    `此操作不可恢复！\n\n` +
+    `建议先导出配置进行备份。`
+  )
+  
+  if (confirmed) {
+    clearCustomData()
+  }
+}
+
+// 清除自定义数据
+const clearCustomData = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+    allData.value = mergeData(defaultData.value, [])
+    categories.value = allData.value
+    alert('已清除所有自定义数据，恢复到默认状态。')
+    closeManageModal()
+  } catch (error) {
+    console.error('清除数据失败:', error)
+    alert('清除失败：' + error.message)
+  }
 }
 
 // 重置导入表单
@@ -403,7 +652,7 @@ const addSite = () => {
   // 生成唯一ID
   const timestamp = Date.now()
   const randomStr = Math.random().toString(36).substring(2, 9)
-  const newSiteId = `site-${timestamp}-${randomStr}`
+  const newSiteId = `custom-${timestamp}-${randomStr}`
 
   // 处理标签
   const tags = siteInfo.value.tagsInput
@@ -417,25 +666,32 @@ const addSite = () => {
     description: siteInfo.value.description,
     url: siteInfo.value.url,
     icon: siteInfo.value.icon || 'fas fa-link',
-    tags: tags
+    tags: tags,
+    categoryId: siteInfo.value.categoryId,
+    isCustom: true
   }
 
-  // 找到对应的分类并添加网站
-  const categoryIndex = allData.value.findIndex(cat => cat.id === siteInfo.value.categoryId)
-  if (categoryIndex !== -1) {
-    allData.value[categoryIndex].sites.push(newSite)
-    
-    // 显示成功提示
-    alert(`成功添加 "${newSite.name}" 到 "${allData.value[categoryIndex].name}" 分类！`)
-    
-    // 关闭弹窗
-    closeModal()
-    
-    // 切换到对应分类
-    selectCategory(siteInfo.value.categoryId)
-  } else {
-    errorMessage.value = '添加失败：找不到指定的分类'
-  }
+  // 保存到 localStorage
+  const customSites = loadCustomData()
+  customSites.push(newSite)
+  saveCustomData(customSites)
+
+  // 重新加载并合并数据
+  allData.value = mergeData(defaultData.value, customSites)
+  categories.value = allData.value
+
+  // 找到分类名称
+  const category = allData.value.find(cat => cat.id === siteInfo.value.categoryId)
+  const categoryName = category ? category.name : '列表'
+  
+  // 显示成功提示
+  alert(`成功添加 "${newSite.name}" 到 "${categoryName}" 分类！\n\n数据已保存到浏览器，刷新页面不会丢失。`)
+  
+  // 关闭弹窗
+  closeModal()
+  
+  // 切换到对应分类
+  selectCategory(siteInfo.value.categoryId)
 }
 </script>
 

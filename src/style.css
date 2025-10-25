@@ -122,6 +122,12 @@ body {
   color: var(--text-secondary);
 }
 
+/* 操作按钮组 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
 /* 导入按钮 */
 .import-btn {
   display: flex;
@@ -146,6 +152,33 @@ body {
 }
 
 .import-btn i {
+  font-size: 16px;
+}
+
+/* 管理按钮 */
+.manage-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.manage-btn:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.manage-btn i {
   font-size: 16px;
 }
 
@@ -648,6 +681,149 @@ body {
   cursor: not-allowed;
 }
 
+/* 数据管理弹窗样式 */
+.manage-section {
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.manage-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.manage-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.manage-section h4 i {
+  color: var(--primary-color);
+  font-size: 18px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* 数据统计 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.stat-item {
+  background: var(--background);
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.stat-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.stat-value.custom {
+  color: var(--secondary-color);
+}
+
+.stat-value.total {
+  color: #f59e0b;
+}
+
+/* 操作按钮 */
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.action-btn i {
+  font-size: 16px;
+}
+
+.export-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.export-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.action-btn.import-btn {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.action-btn.import-btn:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 危险区域 */
+.danger-section {
+  background: #fef2f2;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #fecaca;
+}
+
+.danger-section h4 i {
+  color: #dc2626;
+}
+
+.danger-btn {
+  background: #dc2626;
+  color: white;
+}
+
+.danger-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .container {
@@ -665,9 +841,20 @@ body {
     flex-direction: column;
   }
 
-  .import-btn {
+  .action-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .import-btn,
+  .manage-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .modal-overlay {
