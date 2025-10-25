@@ -75,25 +75,53 @@
           </div>
           
           <div class="sites-grid">
-            <a 
+            <div 
               v-for="site in category.sites" 
               :key="site.id"
-              :href="site.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="site-card"
+              class="site-card-wrapper"
+              :class="{ 'is-custom': site.isCustom }"
             >
-              <div class="site-icon">
-                <i :class="site.icon || 'fas fa-link'"></i>
-              </div>
-              <div class="site-info">
-                <h3 class="site-title">{{ site.name }}</h3>
-                <p class="site-description">{{ site.description }}</p>
-                <div class="site-tags" v-if="site.tags && site.tags.length">
-                  <span v-for="tag in site.tags" :key="tag" class="tag">{{ tag }}</span>
+              <a 
+                :href="site.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="site-card"
+              >
+                <div class="site-icon">
+                  <i :class="site.icon || 'fas fa-link'"></i>
                 </div>
+                <div class="site-info">
+                  <h3 class="site-title">{{ site.name }}</h3>
+                  <p class="site-description">{{ site.description }}</p>
+                  <div class="site-tags" v-if="site.tags && site.tags.length">
+                    <span v-for="tag in site.tags" :key="tag" class="tag">{{ tag }}</span>
+                  </div>
+                </div>
+              </a>
+              
+              <!-- 自定义网站的操作按钮 -->
+              <div v-if="site.isCustom" class="site-actions">
+                <button 
+                  class="action-icon edit-icon" 
+                  @click.stop="editSite(site, category.id)"
+                  title="编辑"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="action-icon delete-icon" 
+                  @click.stop="confirmDeleteSite(site)"
+                  title="删除"
+                >
+                  <i class="fas fa-trash-alt"></i>
+                </button>
               </div>
-            </a>
+              
+              <!-- 自定义标记 -->
+              <div v-if="site.isCustom" class="custom-badge">
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -184,8 +212,8 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>
-            <i class="fas fa-plus-circle"></i>
-            导入网站
+            <i :class="isEditMode ? 'fas fa-edit' : 'fas fa-plus-circle'"></i>
+            {{ isEditMode ? '编辑网站' : '导入网站' }}
           </h3>
           <button class="close-btn" @click="closeModal">
             <i class="fas fa-times"></i>
@@ -262,7 +290,7 @@
             :disabled="!canAddSite"
           >
             <i class="fas fa-check"></i>
-            添加到列表
+            {{ isEditMode ? '保存修改' : '添加到列表' }}
           </button>
         </div>
       </div>
@@ -286,6 +314,8 @@ const importUrl = ref('')
 const isFetching = ref(false)
 const errorMessage = ref('')
 const fileInput = ref(null)
+const isEditMode = ref(false)
+const editingSiteId = ref('')
 const siteInfo = ref({
   name: '',
   description: '',
@@ -420,6 +450,8 @@ const filteredCategories = computed(() => {
 // 关闭导入弹窗
 const closeModal = () => {
   showImportModal.value = false
+  isEditMode.value = false
+  editingSiteId.value = ''
   resetImportForm()
 }
 
@@ -747,56 +779,111 @@ const canAddSite = computed(() => {
          siteInfo.value.url
 })
 
-// 添加网站到列表
+// 添加或更新网站
 const addSite = () => {
   if (!canAddSite.value) {
     errorMessage.value = '请填写完整信息'
     return
   }
 
-  // 生成唯一ID
-  const timestamp = Date.now()
-  const randomStr = Math.random().toString(36).substring(2, 9)
-  const newSiteId = `custom-${timestamp}-${randomStr}`
-
   // 处理标签
   const tags = siteInfo.value.tagsInput
     ? siteInfo.value.tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag)
     : []
 
-  // 创建新网站对象
-  const newSite = {
-    id: newSiteId,
-    name: siteInfo.value.name,
-    description: siteInfo.value.description,
-    url: siteInfo.value.url,
-    icon: siteInfo.value.icon || 'fas fa-link',
-    tags: tags,
-    categoryId: siteInfo.value.categoryId,
-    isCustom: true
-  }
-
-  // 保存到 localStorage
   const customSites = loadCustomData()
-  customSites.push(newSite)
-  saveCustomData(customSites)
 
-  // 重新加载并合并数据
-  allData.value = mergeData(defaultData.value, customSites)
+  if (isEditMode.value) {
+    // 编辑模式：更新现有网站
+    const siteIndex = customSites.findIndex(s => s.id === editingSiteId.value)
+    if (siteIndex !== -1) {
+      customSites[siteIndex] = {
+        ...customSites[siteIndex],
+        name: siteInfo.value.name,
+        description: siteInfo.value.description,
+        url: siteInfo.value.url,
+        icon: siteInfo.value.icon || 'fas fa-link',
+        tags: tags,
+        categoryId: siteInfo.value.categoryId
+      }
+      
+      saveCustomData(customSites)
+      allData.value = mergeData(defaultData.value, customSites)
+      categories.value = allData.value
+      
+      alert(`成功更新 "${siteInfo.value.name}"！`)
+      closeModal()
+      selectCategory(siteInfo.value.categoryId)
+    }
+  } else {
+    // 添加模式：创建新网站
+    const timestamp = Date.now()
+    const randomStr = Math.random().toString(36).substring(2, 9)
+    const newSiteId = `custom-${timestamp}-${randomStr}`
+
+    const newSite = {
+      id: newSiteId,
+      name: siteInfo.value.name,
+      description: siteInfo.value.description,
+      url: siteInfo.value.url,
+      icon: siteInfo.value.icon || 'fas fa-link',
+      tags: tags,
+      categoryId: siteInfo.value.categoryId,
+      isCustom: true
+    }
+
+    customSites.push(newSite)
+    saveCustomData(customSites)
+    allData.value = mergeData(defaultData.value, customSites)
+    categories.value = allData.value
+
+    const category = allData.value.find(cat => cat.id === siteInfo.value.categoryId)
+    const categoryName = category ? category.name : '列表'
+    
+    alert(`成功添加 "${newSite.name}" 到 "${categoryName}" 分类！\n\n数据已保存到浏览器，刷新页面不会丢失。`)
+    closeModal()
+    selectCategory(siteInfo.value.categoryId)
+  }
+}
+
+// 编辑网站
+const editSite = (site, categoryId) => {
+  isEditMode.value = true
+  editingSiteId.value = site.id
+  
+  siteInfo.value = {
+    name: site.name,
+    description: site.description,
+    url: site.url,
+    icon: site.icon || 'fas fa-link',
+    categoryId: categoryId,
+    tagsInput: site.tags ? site.tags.join(',') : ''
+  }
+  
+  showImportModal.value = true
+}
+
+// 确认删除网站
+const confirmDeleteSite = (site) => {
+  const confirmed = confirm(
+    `确定要删除 "${site.name}" 吗？\n\n此操作不可恢复！`
+  )
+  
+  if (confirmed) {
+    deleteSite(site.id)
+  }
+}
+
+// 删除网站
+const deleteSite = (siteId) => {
+  const customSites = loadCustomData()
+  const filteredSites = customSites.filter(s => s.id !== siteId)
+  
+  saveCustomData(filteredSites)
+  allData.value = mergeData(defaultData.value, filteredSites)
   categories.value = allData.value
-
-  // 找到分类名称
-  const category = allData.value.find(cat => cat.id === siteInfo.value.categoryId)
-  const categoryName = category ? category.name : '列表'
   
-  // 显示成功提示
-  alert(`成功添加 "${newSite.name}" 到 "${categoryName}" 分类！\n\n数据已保存到浏览器，刷新页面不会丢失。`)
-  
-  // 关闭弹窗
-  closeModal()
-  
-  // 切换到对应分类
-  selectCategory(siteInfo.value.categoryId)
+  alert('删除成功！')
 }
 </script>
 
