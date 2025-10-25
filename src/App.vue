@@ -540,6 +540,124 @@ const clearError = () => {
   errorMessage.value = ''
 }
 
+// 智能识别网站信息（基于域名）
+const getSmartSiteInfo = (url) => {
+  const hostname = url.hostname.toLowerCase()
+  const domain = hostname.replace('www.', '')
+  
+  // 常见网站数据库
+  const knownSites = {
+    // 开发工具
+    'github.com': { name: 'GitHub', desc: '全球最大的代码托管平台', icon: 'fab fa-github', category: 'dev-tools', tags: '代码托管,开源,协作' },
+    'gitlab.com': { name: 'GitLab', desc: 'DevOps 平台', icon: 'fab fa-gitlab', category: 'dev-tools', tags: '代码托管,CI/CD' },
+    'stackoverflow.com': { name: 'Stack Overflow', desc: '程序员问答社区', icon: 'fab fa-stack-overflow', category: 'dev-tools', tags: '问答,社区' },
+    'npmjs.com': { name: 'NPM', desc: 'Node.js 包管理器', icon: 'fab fa-npm', category: 'dev-tools', tags: 'JavaScript,包管理' },
+    'code.visualstudio.com': { name: 'VS Code', desc: '微软开发的代码编辑器', icon: 'fas fa-code', category: 'dev-tools', tags: '编辑器,IDE' },
+    
+    // 设计资源
+    'figma.com': { name: 'Figma', desc: '在线协作设计工具', icon: 'fas fa-pen-nib', category: 'design', tags: '设计,原型,协作' },
+    'dribbble.com': { name: 'Dribbble', desc: '设计师作品展示平台', icon: 'fab fa-dribbble', category: 'design', tags: '设计,灵感' },
+    'behance.net': { name: 'Behance', desc: 'Adobe 设计作品平台', icon: 'fab fa-behance', category: 'design', tags: '设计,作品集' },
+    'unsplash.com': { name: 'Unsplash', desc: '免费高质量图片库', icon: 'fas fa-image', category: 'design', tags: '图片,免费' },
+    
+    // AI工具
+    'openai.com': { name: 'OpenAI', desc: 'AI 研究和部署公司', icon: 'fas fa-robot', category: 'ai-tools', tags: 'AI,ChatGPT' },
+    'chat.openai.com': { name: 'ChatGPT', desc: 'OpenAI 智能对话AI', icon: 'fas fa-comments', category: 'ai-tools', tags: 'AI,对话' },
+    'midjourney.com': { name: 'Midjourney', desc: 'AI 绘画工具', icon: 'fas fa-paint-brush', category: 'ai-tools', tags: 'AI,绘画' },
+    
+    // 效率工具
+    'notion.so': { name: 'Notion', desc: '全能笔记和协作工具', icon: 'fas fa-book', category: 'productivity', tags: '笔记,协作' },
+    'trello.com': { name: 'Trello', desc: '看板式项目管理工具', icon: 'fab fa-trello', category: 'productivity', tags: '项目管理,看板' },
+    'feishu.cn': { name: '飞书', desc: '字节跳动企业协作平台', icon: 'fas fa-comments', category: 'productivity', tags: '协作,办公' },
+    
+    // 学习平台
+    'developer.mozilla.org': { name: 'MDN Web Docs', desc: 'Web 技术文档', icon: 'fas fa-book-open', category: 'learning', tags: '文档,前端' },
+    'freecodecamp.org': { name: 'freeCodeCamp', desc: '免费编程学习平台', icon: 'fab fa-free-code-camp', category: 'learning', tags: '编程,学习' },
+  }
+  
+  // 查找已知网站
+  if (knownSites[domain]) {
+    const site = knownSites[domain]
+    return {
+      name: site.name,
+      description: site.desc,
+      icon: site.icon,
+      categoryId: site.category,
+      tagsInput: site.tags
+    }
+  }
+  
+  // 智能推测分类
+  let categoryId = ''
+  let icon = 'fas fa-link'
+  let tags = []
+  
+  if (domain.includes('github') || domain.includes('gitlab') || domain.includes('code') || domain.includes('dev')) {
+    categoryId = 'dev-tools'
+    icon = 'fas fa-code'
+    tags = ['开发', '工具']
+  } else if (domain.includes('design') || domain.includes('figma') || domain.includes('sketch')) {
+    categoryId = 'design'
+    icon = 'fas fa-palette'
+    tags = ['设计']
+  } else if (domain.includes('ai') || domain.includes('gpt') || domain.includes('chat')) {
+    categoryId = 'ai-tools'
+    icon = 'fas fa-robot'
+    tags = ['AI']
+  } else if (domain.includes('notion') || domain.includes('docs') || domain.includes('note')) {
+    categoryId = 'productivity'
+    icon = 'fas fa-tasks'
+    tags = ['效率', '工具']
+  } else if (domain.includes('learn') || domain.includes('edu') || domain.includes('course')) {
+    categoryId = 'learning'
+    icon = 'fas fa-graduation-cap'
+    tags = ['学习']
+  } else if (domain.includes('tool') || domain.includes('util')) {
+    categoryId = 'utilities'
+    icon = 'fas fa-tools'
+    tags = ['工具']
+  }
+  
+  // 从域名提取名称
+  const nameParts = domain.split('.')
+  const name = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1)
+  
+  return {
+    name: name,
+    description: `${name} - ${url.hostname}`,
+    icon: icon,
+    categoryId: categoryId,
+    tagsInput: tags.join(',')
+  }
+}
+
+// 使用代理获取网站信息（带超时）
+const fetchWithProxy = async (url, timeout = 8000) => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  try {
+    // 尝试多个代理服务，使用最快的
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ]
+    
+    const response = await Promise.race(
+      proxies.map(proxy => 
+        fetch(proxy, { signal: controller.signal })
+          .then(res => res.ok ? res.text() : Promise.reject())
+      )
+    )
+    
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    throw error
+  }
+}
+
 // 获取网站信息
 const fetchSiteInfo = async () => {
   if (!importUrl.value.trim()) {
@@ -548,8 +666,9 @@ const fetchSiteInfo = async () => {
   }
 
   // 验证URL格式
+  let url
   try {
-    new URL(importUrl.value)
+    url = new URL(importUrl.value)
   } catch (e) {
     errorMessage.value = 'URL格式不正确，请输入完整的URL（包括 http:// 或 https://）'
     return
@@ -559,76 +678,62 @@ const fetchSiteInfo = async () => {
   errorMessage.value = ''
 
   try {
-    // 使用代理服务获取网站信息（避免CORS问题）
-    // 这里使用allorigins.win作为代理服务
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(importUrl.value)}`
-    const response = await fetch(proxyUrl)
-    const data = await response.json()
-    
-    if (!data.contents) {
-      throw new Error('无法获取网站内容')
-    }
-
-    // 解析HTML内容
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(data.contents, 'text/html')
-    
-    // 提取网站标题
-    let title = doc.querySelector('title')?.textContent || ''
-    const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content')
-    if (ogTitle) title = ogTitle
-    
-    // 提取网站描述
-    let description = doc.querySelector('meta[name="description"]')?.getAttribute('content') || ''
-    const ogDescription = doc.querySelector('meta[property="og:description"]')?.getAttribute('content')
-    if (ogDescription) description = ogDescription
-    
-    // 提取关键词作为标签
-    const keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content') || ''
-    
-    // 根据URL推测分类
-    const url = new URL(importUrl.value)
-    const hostname = url.hostname.toLowerCase()
-    let suggestedCategory = ''
-    
-    if (hostname.includes('github') || hostname.includes('gitlab') || hostname.includes('code')) {
-      suggestedCategory = 'dev-tools'
-    } else if (hostname.includes('figma') || hostname.includes('dribbble') || hostname.includes('design')) {
-      suggestedCategory = 'design'
-    } else if (hostname.includes('notion') || hostname.includes('trello') || hostname.includes('productivity')) {
-      suggestedCategory = 'productivity'
-    } else if (hostname.includes('learn') || hostname.includes('course') || hostname.includes('edu')) {
-      suggestedCategory = 'learning'
-    }
-    
-    // 填充表单
+    // 先使用智能识别快速填充基本信息
+    const smartInfo = getSmartSiteInfo(url)
     siteInfo.value = {
-      name: title || url.hostname,
-      description: description || '暂无描述',
+      name: smartInfo.name,
+      description: smartInfo.description,
       url: importUrl.value,
-      icon: 'fas fa-link',
-      categoryId: suggestedCategory,
-      tagsInput: keywords ? keywords.split(',').slice(0, 3).join(',') : ''
+      icon: smartInfo.icon,
+      categoryId: smartInfo.categoryId,
+      tagsInput: smartInfo.tagsInput
+    }
+    
+    // 如果是已知网站，直接返回，不需要抓取
+    const domain = url.hostname.toLowerCase().replace('www.', '')
+    const knownDomains = ['github.com', 'gitlab.com', 'stackoverflow.com', 'npmjs.com', 
+                          'figma.com', 'dribbble.com', 'unsplash.com', 'notion.so', 
+                          'trello.com', 'openai.com', 'chat.openai.com', 'midjourney.com']
+    
+    if (knownDomains.includes(domain)) {
+      isFetching.value = false
+      return
+    }
+    
+    // 尝试抓取更详细的信息（后台进行，不阻塞用户）
+    try {
+      const html = await fetchWithProxy(importUrl.value, 8000)
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+      
+      // 提取更准确的信息
+      const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
+                    doc.querySelector('title')?.textContent ||
+                    smartInfo.name
+      
+      const description = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') ||
+                          doc.querySelector('meta[name="description"]')?.getAttribute('content') ||
+                          smartInfo.description
+      
+      const keywords = doc.querySelector('meta[name="keywords"]')?.getAttribute('content') || ''
+      
+      // 更新信息
+      siteInfo.value = {
+        name: title.trim(),
+        description: description.trim(),
+        url: importUrl.value,
+        icon: smartInfo.icon,
+        categoryId: smartInfo.categoryId,
+        tagsInput: keywords ? keywords.split(',').slice(0, 3).map(t => t.trim()).join(',') : smartInfo.tagsInput
+      }
+    } catch (fetchError) {
+      // 抓取失败不影响，已经有智能识别的基本信息
+      console.log('详细信息获取失败，使用智能识别信息')
     }
     
   } catch (error) {
     console.error('获取网站信息失败:', error)
-    errorMessage.value = '获取网站信息失败，请手动填写信息'
-    
-    // 即使失败也提供基本信息
-    try {
-      const url = new URL(importUrl.value)
-      siteInfo.value = {
-        name: url.hostname,
-        description: '',
-        url: importUrl.value,
-        icon: 'fas fa-link',
-        categoryId: '',
-        tagsInput: ''
-      }
-    } catch (e) {
-      // URL解析失败
-    }
+    errorMessage.value = '自动识别完成，请确认信息'
   } finally {
     isFetching.value = false
   }
