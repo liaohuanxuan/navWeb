@@ -1,0 +1,215 @@
+{
+  "categories": [
+    {
+      "id": "dev-tools",
+      "name": "开发工具",
+      "icon": "fas fa-code",
+      "sites": [
+        {
+          "id": "github",
+          "name": "GitHub",
+          "description": "全球最大的代码托管平台，开源项目的家园",
+          "url": "https://github.com",
+          "icon": "fab fa-github",
+          "tags": ["代码托管", "开源", "协作"]
+        },
+        {
+          "id": "vscode",
+          "name": "VS Code",
+          "description": "微软开发的强大代码编辑器，支持丰富的扩展",
+          "url": "https://code.visualstudio.com",
+          "icon": "fas fa-code",
+          "tags": ["编辑器", "IDE", "开发"]
+        },
+        {
+          "id": "stackoverflow",
+          "name": "Stack Overflow",
+          "description": "程序员问答社区，解决编程问题的好帮手",
+          "url": "https://stackoverflow.com",
+          "icon": "fab fa-stack-overflow",
+          "tags": ["问答", "社区", "学习"]
+        },
+        {
+          "id": "npm",
+          "name": "NPM",
+          "description": "Node.js包管理器，JavaScript生态系统的核心",
+          "url": "https://www.npmjs.com",
+          "icon": "fab fa-npm",
+          "tags": ["包管理", "JavaScript", "Node.js"]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "name": "设计资源",
+      "icon": "fas fa-palette",
+      "sites": [
+        {
+          "id": "figma",
+          "name": "Figma",
+          "description": "在线协作设计工具，UI/UX设计师的首选",
+          "url": "https://www.figma.com",
+          "icon": "fas fa-pen-nib",
+          "tags": ["设计", "原型", "协作"]
+        },
+        {
+          "id": "dribbble",
+          "name": "Dribbble",
+          "description": "设计师作品展示平台，寻找设计灵感的好地方",
+          "url": "https://dribbble.com",
+          "icon": "fab fa-dribbble",
+          "tags": ["设计", "灵感", "作品集"]
+        },
+        {
+          "id": "unsplash",
+          "name": "Unsplash",
+          "description": "免费高质量图片库，可商用的摄影作品",
+          "url": "https://unsplash.com",
+          "icon": "fas fa-image",
+          "tags": ["图片", "免费", "摄影"]
+        },
+        {
+          "id": "iconfont",
+          "name": "Iconfont",
+          "description": "阿里巴巴矢量图标库，丰富的图标资源",
+          "url": "https://www.iconfont.cn",
+          "icon": "fas fa-icons",
+          "tags": ["图标", "矢量", "免费"]
+        }
+      ]
+    },
+    {
+      "id": "ai-tools",
+      "name": "AI工具",
+      "icon": "fas fa-robot",
+      "sites": [
+        {
+          "id": "chatgpt",
+          "name": "ChatGPT",
+          "description": "OpenAI开发的智能对话AI，强大的语言模型",
+          "url": "https://chat.openai.com",
+          "icon": "fas fa-comments",
+          "tags": ["AI", "对话", "助手"]
+        },
+        {
+          "id": "midjourney",
+          "name": "Midjourney",
+          "description": "AI绘画工具，通过文字描述生成精美图片",
+          "url": "https://www.midjourney.com",
+          "icon": "fas fa-paint-brush",
+          "tags": ["AI", "绘画", "创作"]
+        },
+        {
+          "id": "copilot",
+          "name": "GitHub Copilot",
+          "description": "AI编程助手，智能代码补全和建议",
+          "url": "https://github.com/features/copilot",
+          "icon": "fas fa-robot",
+          "tags": ["AI", "编程", "辅助"]
+        }
+      ]
+    },
+    {
+      "id": "productivity",
+      "name": "效率工具",
+      "icon": "fas fa-rocket",
+      "sites": [
+        {
+          "id": "notion",
+          "name": "Notion",
+          "description": "全能笔记和协作工具，打造个人知识库",
+          "url": "https://www.notion.so",
+          "icon": "fas fa-book",
+          "tags": ["笔记", "协作", "知识管理"]
+        },
+        {
+          "id": "trello",
+          "name": "Trello",
+          "description": "看板式项目管理工具，可视化任务管理",
+          "url": "https://trello.com",
+          "icon": "fab fa-trello",
+          "tags": ["项目管理", "看板", "协作"]
+        },
+        {
+          "id": "feishu",
+          "name": "飞书",
+          "description": "字节跳动出品的企业协作平台",
+          "url": "https://www.feishu.cn",
+          "icon": "fas fa-comments",
+          "tags": ["协作", "办公", "沟通"]
+        }
+      ]
+    },
+    {
+      "id": "learning",
+      "name": "学习平台",
+      "icon": "fas fa-graduation-cap",
+      "sites": [
+        {
+          "id": "mdn",
+          "name": "MDN Web Docs",
+          "description": "Mozilla维护的Web技术文档，前端开发必备",
+          "url": "https://developer.mozilla.org",
+          "icon": "fas fa-book-open",
+          "tags": ["文档", "前端", "学习"]
+        },
+        {
+          "id": "freecodecamp",
+          "name": "freeCodeCamp",
+          "description": "免费编程学习平台，从零开始学编程",
+          "url": "https://www.freecodecamp.org",
+          "icon": "fab fa-free-code-camp",
+          "tags": ["编程", "学习", "免费"]
+        },
+        {
+          "id": "coursera",
+          "name": "Coursera",
+          "description": "在线课程平台，世界名校课程资源",
+          "url": "https://www.coursera.org",
+          "icon": "fas fa-university",
+          "tags": ["课程", "学习", "认证"]
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "name": "实用工具",
+      "icon": "fas fa-tools",
+      "sites": [
+        {
+          "id": "regex101",
+          "name": "Regex101",
+          "description": "在线正则表达式测试工具，支持多种语言",
+          "url": "https://regex101.com",
+          "icon": "fas fa-terminal",
+          "tags": ["正则", "测试", "工具"]
+        },
+        {
+          "id": "caniuse",
+          "name": "Can I Use",
+          "description": "查询浏览器对Web技术的支持情况",
+          "url": "https://caniuse.com",
+          "icon": "fas fa-browser",
+          "tags": ["浏览器", "兼容性", "查询"]
+        },
+        {
+          "id": "json-formatter",
+          "name": "JSON Formatter",
+          "description": "在线JSON格式化和验证工具",
+          "url": "https://jsonformatter.org",
+          "icon": "fas fa-code",
+          "tags": ["JSON", "格式化", "工具"]
+        },
+        {
+          "id": "tinypng",
+          "name": "TinyPNG",
+          "description": "在线图片压缩工具，保持质量的同时减小文件大小",
+          "url": "https://tinypng.com",
+          "icon": "fas fa-compress",
+          "tags": ["图片", "压缩", "优化"]
+        }
+      ]
+    }
+  ]
+}
+
