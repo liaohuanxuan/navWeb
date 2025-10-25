@@ -82,27 +82,19 @@
               :class="{ 'is-custom': site.isCustom }"
             >
               <div class="site-card">
-                <!-- 自定义标记 -->
-                <div v-if="site.isCustom" class="custom-badge">
-                  <i class="fas fa-star"></i>
-                  CUSTOM
-                </div>
-                
                 <!-- 自定义网站的操作按钮 -->
                 <div v-if="site.isCustom" class="site-actions">
                   <button 
-                    class="action-icon edit-icon" 
+                    class="action-btn edit-btn" 
                     @click.stop="editSite(site, category.id)"
-                    title="编辑"
                   >
-                    <i class="fas fa-edit"></i>
+                    编辑
                   </button>
                   <button 
-                    class="action-icon delete-icon" 
+                    class="action-btn delete-btn" 
                     @click.stop="confirmDeleteSite(site)"
-                    title="删除"
                   >
-                    <i class="fas fa-trash-alt"></i>
+                    删除
                   </button>
                 </div>
                 
