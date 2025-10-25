@@ -122,7 +122,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* 操作按钮组 */
+/* 操作按钮�?*/
 .action-buttons {
   display: flex;
   gap: 12px;
@@ -182,7 +182,7 @@ body {
   font-size: 16px;
 }
 
-/* 分类筛选 */
+/* 分类筛�?*/
 .category-filter {
   background: var(--card-bg);
   border-bottom: 1px solid var(--border-color);
@@ -313,12 +313,12 @@ body {
   gap: 20px;
 }
 
-/* 网站卡片包装器 */
+/* 网站卡片包装�?*/
 .site-card-wrapper {
   position: relative;
 }
 
-/* 自定义网站样式 */
+/* 自定义网站样�?*/
 .site-card-wrapper.is-custom .site-card {
   border-left: 4px solid var(--secondary-color);
   background: linear-gradient(to right, rgba(16, 185, 129, 0.02), transparent);
@@ -339,7 +339,7 @@ body {
   transform: translateY(-4px);
 }
 
-/* 卡片链接样式 - 去掉下划线 */
+/* 卡片链接样式 - 去掉下划�?*/
 .site-card-link {
   display: flex;
   gap: 16px;
@@ -387,6 +387,7 @@ body {
   margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -408,7 +409,7 @@ body {
   font-weight: 500;
 }
 
-/* 自定义网站操作按钮 */
+/* 自定义网站操作按�?*/
 .site-actions {
   position: absolute;
   top: 12px;
@@ -894,7 +895,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* 响应式设计 */
+/* 响应式设�?*/
 @media (max-width: 768px) {
   .container {
     padding: 0 16px;
@@ -1005,3 +1006,4 @@ body {
     font-size: 13px;
   }
 }
+
