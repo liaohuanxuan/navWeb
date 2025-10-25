@@ -216,7 +216,9 @@ const siteInfo = ref({
 // 加载数据
 onMounted(async () => {
   try {
-    const response = await fetch('/data/sites.json')
+    // 使用 Vite 的 BASE_URL 确保在子目录部署时路径正确
+    const baseUrl = import.meta.env.BASE_URL
+    const response = await fetch(`${baseUrl}data/sites.json`)
     const data = await response.json()
     allData.value = data.categories
     categories.value = data.categories
