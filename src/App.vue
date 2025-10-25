@@ -81,45 +81,48 @@
               class="site-card-wrapper"
               :class="{ 'is-custom': site.isCustom }"
             >
-              <a 
-                :href="site.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="site-card"
-              >
-                <div class="site-icon">
-                  <i :class="site.icon || 'fas fa-link'"></i>
+              <div class="site-card">
+                <!-- 自定义标记 -->
+                <div v-if="site.isCustom" class="custom-badge">
+                  <i class="fas fa-star"></i>
+                  CUSTOM
                 </div>
-                <div class="site-info">
-                  <h3 class="site-title">{{ site.name }}</h3>
-                  <p class="site-description">{{ site.description }}</p>
-                  <div class="site-tags" v-if="site.tags && site.tags.length">
-                    <span v-for="tag in site.tags" :key="tag" class="tag">{{ tag }}</span>
+                
+                <!-- 自定义网站的操作按钮 -->
+                <div v-if="site.isCustom" class="site-actions">
+                  <button 
+                    class="action-icon edit-icon" 
+                    @click.stop="editSite(site, category.id)"
+                    title="编辑"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button 
+                    class="action-icon delete-icon" 
+                    @click.stop="confirmDeleteSite(site)"
+                    title="删除"
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                
+                <a 
+                  :href="site.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="site-card-link"
+                >
+                  <div class="site-icon">
+                    <i :class="site.icon || 'fas fa-link'"></i>
                   </div>
-                </div>
-              </a>
-              
-              <!-- 自定义网站的操作按钮 -->
-              <div v-if="site.isCustom" class="site-actions">
-                <button 
-                  class="action-icon edit-icon" 
-                  @click.stop="editSite(site, category.id)"
-                  title="编辑"
-                >
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button 
-                  class="action-icon delete-icon" 
-                  @click.stop="confirmDeleteSite(site)"
-                  title="删除"
-                >
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-              
-              <!-- 自定义标记 -->
-              <div v-if="site.isCustom" class="custom-badge">
-                <i class="fas fa-star"></i>
+                  <div class="site-info">
+                    <h3 class="site-title">{{ site.name }}</h3>
+                    <p class="site-description">{{ site.description }}</p>
+                    <div class="site-tags" v-if="site.tags && site.tags.length">
+                      <span v-for="tag in site.tags" :key="tag" class="tag">{{ tag }}</span>
+                    </div>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
